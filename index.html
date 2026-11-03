@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#151f2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Python">
+<title>Python Playground Beta</title>
+<style>
+:root{--bg:#111827;--p:#1b2638;--p2:#202e43;--line:#34445b;--txt:#edf2f8;--muted:#9eacc0;--teal:#65d6c4;--blue:#8bb8ff;--yellow:#f5ce78}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+header{min-height:66px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:env(safe-area-inset-top) max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left));background:#151f2e}
+.brand{font-size:19px;font-weight:700}.brand span{color:var(--teal)}
+.sub,.hint{color:var(--muted);font-size:12px;margin-top:4px}
+.status{font-size:12px;color:var(--teal);border:1px solid #326c67;padding:7px 11px;border-radius:20px;white-space:nowrap}
+.status.busy{color:var(--yellow);border-color:#7a6a3a}
+.status.bad{color:#ff9db3;border-color:#744354}
+main{padding:18px max(22px,env(safe-area-inset-right)) 24px max(22px,env(safe-area-inset-left))}
+.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(270px,.85fr);gap:14px}
+.panel{background:var(--p);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.panel h2{font-size:15px;margin:0}
+textarea,input{width:100%;background:#0d1522;color:#dce8f7;border:1px solid #35465f;border-radius:9px;padding:12px;font:13px/1.6 ui-monospace,Menlo,monospace;outline:none}
+textarea:focus,input:focus{border-color:var(--teal)}
+#code{height:300px;resize:vertical;padding:16px;font-size:14px;tab-size:4}
+.keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.keys button{flex:0 0 auto;min-width:40px;background:var(--p2);color:var(--txt);border:1px solid var(--line);border-radius:7px;padding:7px 11px;font:14px ui-monospace,Menlo,monospace;cursor:pointer}
+.actions{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+button{font-family:inherit;font-size:14px}
+.run{background:var(--teal);color:#10232a;border:0;border-radius:8px;padding:10px 18px;font-weight:700;cursor:pointer}
+.run:disabled{opacity:.55;cursor:default}
+.secondary{background:var(--p2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:9px 13px;cursor:pointer}
+.key{margin-left:auto;color:var(--muted);font-size:12px}
+.output{min-height:110px;max-height:250px;overflow:auto;white-space:pre-wrap;word-break:break-word;background:#0d1522;border:1px solid #35465f;border-radius:9px;padding:13px;font:13px/1.6 ui-monospace,Menlo,monospace;color:#d8e6f7;margin:0}
+.empty{color:#7f8da2}
+.vars{display:grid;gap:7px}
+.var{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:9px;background:var(--p2);border-radius:7px;font:13px ui-monospace,Menlo,monospace}
+.type{color:var(--blue)}
+.value{color:var(--yellow);max-width:180px;overflow-wrap:anywhere;text-align:right}
+.tip{margin-top:14px;padding:12px;background:#111c2b;border-radius:8px;font-size:13px;line-height:1.6;color:#c4d0df}
+.tip b{color:var(--teal)}
+.bottom{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.2fr);gap:14px;margin-top:14px}
+.lessons{display:grid;gap:8px;max-height:440px;overflow:auto}
+.lesson{background:var(--p2);border:1px solid transparent;border-radius:8px;padding:11px;cursor:pointer}
+.lesson:hover,.lesson.selected{border-color:#4c8f89}
+.lesson strong{display:block;font-size:13px}
+.lesson small{color:var(--muted)}
+.note{color:var(--muted);font-size:13px;line-height:1.7}
+.detail p{color:#c4d0df;line-height:1.6}
+.detail pre{white-space:pre-wrap;background:#0d1522;padding:12px;border-radius:8px;color:var(--teal);overflow:auto;font:13px/1.6 ui-monospace,Menlo,monospace}
+.field{display:grid;gap:6px;margin:10px 0}
+.field label{font-size:12px;color:var(--muted)}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lesson-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.primary{background:#294e55;color:#dffbf5;border:1px solid #39766f;border-radius:8px;padding:9px 13px;cursor:pointer}
+.danger{background:#462d3a;color:#ffdce6;border:1px solid #744354;border-radius:8px;padding:9px 13px;cursor:pointer}
+.section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:20px}
+.tabs{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.tab{background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer}
+.tab.on{background:#294e55;color:#dffbf5;border-color:#39766f}
+.progs{display:grid;gap:8px;max-height:360px;overflow:auto}
+.prog{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--p2);border-radius:8px;padding:10px 12px}
+.prog small{display:block;color:var(--muted);margin-top:2px}
+.prog-actions{display:flex;gap:6px;flex-wrap:wrap}
+#modal{position:fixed;inset:0;background:rgba(5,10,18,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+#modal[hidden]{display:none}
+.mbox{background:var(--p);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(560px,100%);max-height:90vh;overflow:auto}
+.mbox h3{margin:0 0 8px;font-size:16px}
+.mbox p{margin:0 0 12px;color:#c4d0df;line-height:1.5;white-space:pre-wrap}
+#mArea{height:220px}
+.mbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
+@media(max-width:850px){
+  .grid,.bottom,.formgrid{grid-template-columns:1fr}
+  header{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+  main{padding:12px max(12px,env(safe-area-inset-right)) 20px max(12px,env(safe-area-inset-left))}
+  .panel{padding:14px}
+  .key{display:none}
+  textarea,input,#code{font-size:16px}
+  #code{height:240px}
+  .lessons{max-height:300px}
+  .var{grid-template-columns:1fr auto}
+  .var .value{grid-column:1 / -1;text-align:left;max-width:none}
+}
+@media(pointer:coarse){
+  .run,.secondary,.primary,.danger{min-height:44px}
+  .run{flex:1 1 auto}
+  .keys button{min-height:40px;min-width:44px}
+  .lesson{padding:14px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="brand">Python <span>Playground</span></div><div class="sub">Uč se Python tím, že ho budeš psát a spouštět</div></div>
+  <div class="status busy" id="engine">Načítám Python…</div>
+</header>
+<main>
+<div class="grid">
+  <div class="panel">
+    <div class="head"><h2>Samostatný Python editor</h2><span class="hint">main.py · nezávislý na lekcích</span></div>
+<textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" inputmode="text">jmeno = "Pavel"
+vek = 30
+vyska = 1.82
+programator = True
+
+print("Ahoj,", jmeno)
+print("Věk:", vek)
+print("Výška:", vyska, "m")
+print("Programátor:", programator)</textarea>
+    <div class="tabs" id="keyTabs"></div>
+    <div class="keys" id="keys"></div>
+    <div class="actions">
+      <button class="run" id="run" disabled>Načítám…</button>
+      <button class="secondary" id="reset">Obnovit příklad</button>
+      <button class="secondary" id="saveProg">💾 Uložit program</button>
+      <span class="key">⌘ + Enter = spustit</span>
+    </div>
+    <div style="margin-top:16px">
+      <div class="head"><h2>Výstup programu</h2><span class="hint" id="status">Zatím nespouštěno</span></div>
+      <pre class="output empty" id="output">Tady se zobrazí výsledek programu…</pre>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="head"><h2>Proměnné v programu</h2><span class="hint">Přehled po spuštění</span></div>
+    <p class="note">Zde uvidíš názvy proměnných, jejich hodnoty a datové typy.</p>
+    <div class="vars" id="vars"><div class="note">Spusť ukázkový kód.</div></div>
+    <div class="tip"><b>Malý tip</b><br>Proměnná je pojmenované místo, ve kterém program drží hodnotu. Python sám pozná její datový typ.</div>
+  </div>
+</div>
+<div class="bottom">
+  <div class="panel">
+    <div class="head"><h2>Učíme se postupně</h2><span class="hint" id="lessonCount"></span></div>
+    <div class="lessons" id="lessonList"></div>
+    <div class="lesson-actions"><button class="primary" id="addLesson">＋ Přidat lekci</button></div>
+  </div>
+  <div class="panel detail" id="lessonPanel">
+    <div class="head"><h2 id="lessonPanelTitle">Vyber lekci</h2><span class="hint">Obsah a editor lekcí</span></div>
+    <div id="lessonDisplay" class="note">Klikni na lekci. Zde se zobrazí její vysvětlení, syntaxe, příklad a úkol.</div>
+    <div id="lessonForm" hidden>
+      <div class="section-title">Editor lekce</div>
+      <div class="field"><label for="fTitle">Název lekce</label><input id="fTitle" placeholder="Např. 7. Seznamy" autocapitalize="off" autocorrect="off"></div>
+      <div class="field"><label for="fShort">Krátký popis</label><input id="fShort" placeholder="Co se v lekci naučíš"></div>
+      <div class="field"><label for="fWhy">Vysvětlení</label><textarea id="fWhy" rows="3" style="height:90px"></textarea></div>
+      <div class="formgrid">
+        <div class="field"><label for="fSyntax">Syntaxe</label><textarea id="fSyntax" rows="4" style="height:110px" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea></div>
+        <div class="field"><label for="fExample">Praktický příklad</label><textarea id="fExample" rows="4" style="height:110px" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea></div>
+      </div>
+      <div class="field"><label for="fTask">Úkol k procvičení</label><textarea id="fTask" rows="2" style="height:70px"></textarea></div>
+      <div class="lesson-actions"><button class="primary" id="saveLesson">Uložit lekci</button><button class="secondary" id="cancelLesson">Zrušit</button></div>
+    </div>
+  </div>
+</div>
+<div class="panel" style="margin-top:14px">
+  <div class="head"><h2>Moje programy</h2><span class="hint" id="progCount"></span></div>
+  <div class="progs" id="progList"></div>
+  <div class="lesson-actions"><button class="secondary" id="exportBtn">⬆ Export zálohy</button><button class="secondary" id="importBtn">⬇ Import zálohy</button></div>
+  <p class="note" style="margin-bottom:0">Programy a vlastní lekce se ukládají jen v tomto prohlížeči (nebo v appce). Mezi webem a appkou je přeneseš přes Export a Import.</p>
+</div>
+</main>
+<footer>Python Playground Beta 0.6 · Python běží přímo ve tvém zařízení (Pyodide) · Vlastní lekce se ukládají v tomto prohlížeči</footer>
+
+<div id="modal" hidden><div class="mbox"><h3 id="mTitle"></h3><p id="mText"></p><input id="mInput" hidden autocapitalize="off" autocorrect="off" spellcheck="false"><textarea id="mArea" hidden spellcheck="false" autocapitalize="off" autocorrect="off"></textarea><div class="mbtns"><span id="mExtras" style="display:contents"></span><button class="secondary" id="mCancel">Zrušit</button><button class="primary" id="mOk">OK</button></div></div></div>
+
+<!-- Web Worker: Python běží mimo hlavní vlákno, takže ho jde po 4 s násilně zastavit -->
+<script type="text/plain" id="workerSrc">
+importScripts(BASE + 'pyodide.js'); // BASE doplní hlavní skript
+const RUNNER = String.raw`
+import sys, json, io, contextlib, traceback
+def __run(source):
+    ns = {"__name__": "__main__"}
+    buf = io.StringIO()
+    ok = True
+    try:
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            exec(compile(source, "<playground>", "exec"), ns)
+    except BaseException:
+        ok = False
+        traceback.print_exc(file=buf)
+    variables = []
+    for name, value in ns.items():
+        if name.startswith("__"):
+            continue
+        try:
+            rendered = repr(value)
+        except Exception:
+            rendered = "<nelze zobrazit>"
+        if len(rendered) > 160:
+            rendered = rendered[:157] + "..."
+        variables.append({"name": name, "type": type(value).__name__, "value": rendered})
+    out = buf.getvalue()
+    if len(out) > 20000:
+        out = out[:20000] + "\n… výstup byl zkrácen"
+    return json.dumps({"ok": ok, "output": out, "variables": variables}, ensure_ascii=False)
+`;
+let runPy = null;
+(async () => {
+  const py = await loadPyodide({ indexURL: BASE });
+  py.runPython(RUNNER);
+  runPy = py.globals.get('__run');
+  postMessage({ type: 'ready' });
+})().catch(e => postMessage({ type: 'fail', error: String(e) }));
+onmessage = e => {
+  if (!runPy) return;
+  try { postMessage({ type: 'result', data: JSON.parse(runPy(e.data.code)) }); }
+  catch (err) { postMessage({ type: 'result', data: { ok: false, output: 'Chyba: ' + err, variables: [] } }); }
+};
+</script>
+
+<script>
+const $=id=>document.getElementById(id), original=$('code').value, LIMIT=4000;
+const isMobile=()=>matchMedia('(max-width:850px)').matches;
+const starter=[
+{title:'1. print() — výpis',short:'Zobraz text a hodnoty',why:'print() vypíše informaci do výstupu programu. Používáme ho, když chceme vidět, co program dělá nebo jaké hodnoty obsahuje.',syntax:'print("Ahoj světe")\nprint(10 + 5)',example:'print("Ahoj")\nprint("Výsledek:", 10 + 5)',task:'Změň text na vlastní pozdrav a přidej print(), který vypíše výsledek 20 + 22.'},
+{title:'2. Proměnné',short:'Ulož hodnotu pod jménem',why:'Proměnná je pojmenované místo pro hodnotu. Díky ní nemusíme hodnotu stále opisovat a můžeme s ní dál pracovat.',syntax:'jmeno = "Pavel"\nvek = 30',example:'produkt = "Káva"\ncena = 59.90\nprint(produkt, cena)',task:'Vytvoř proměnnou mesto, ulož do ní název města a vypiš ji.'},
+{title:'3. Datové typy',short:'str, int, float, bool',why:'Typ říká, jaký druh hodnoty proměnná obsahuje. str je text, int celé číslo, float desetinné číslo a bool pravda/nepravda.',syntax:'jmeno = "Pavel"  # str\nvek = 30          # int\nvyska = 1.82      # float\naktivni = True    # bool',example:'cena = 59.90\nks = 3\ncelkem = cena * ks\nprint(celkem)',task:'Vytvoř proměnné pro název produktu, cenu a počet kusů. Vypočítej celkovou cenu.'},
+{title:'4. Podmínka if / else',short:'Rozhodování v programu',why:'Podmínka umožní programu vybrat, kterou část kódu provede. Pokud je podmínka pravdivá, provede se blok if; jinak else.',syntax:'if cena > 50:\n    print("Dražší")\nelse:\n    print("Levnější")',example:'teplota = 18\nif teplota >= 20:\n    print("Teplo")\nelse:\n    print("Chladněji")',task:'Nastav cenu na 45. Pokud je nižší než 50, vypiš Dobrá cena, jinak Drahé.'},
+{title:'5. Cyklus for',short:'Opakuj příkaz',why:'Cyklus opakuje blok kódu. for se často používá pro průchod položkami seznamu nebo pro opakování známého počtu kroků.',syntax:'for cislo in range(3):\n    print(cislo)',example:'produkty = ["Káva", "Čaj", "Džus"]\nfor produkt in produkty:\n    print(produkt)',task:'Vypiš pomocí for čísla od 1 do 5.'},
+{title:'6. Funkce',short:'Vlastní opakovaně použitelný blok',why:'Funkce pojmenuje část programu. Může přijímat vstupy (parametry) a vracet výsledek pomocí return.',syntax:'def pozdrav(jmeno):\n    return "Ahoj " + jmeno',example:'def secti(a, b):\n    return a + b\n\nvysledek = secti(4, 6)\nprint(vysledek)',task:'Napiš funkci, která přijme cenu a počet kusů a vrátí celkovou cenu.'},
+{"title": "7. Seznamy", "short": "Víc hodnot v jednom pořadí", "why": "Seznam uloží víc hodnot za sebou. Položky se číslují od nuly, takže první je [0]. Do seznamu můžeš přidávat, mazat i procházet jeho položky.", "syntax": "ovoce = [\"jablko\", \"hruška\"]\nprint(ovoce[0])\novoce.append(\"švestka\")\nprint(len(ovoce))", "example": "nakup = [\"chléb\", \"mléko\", \"sýr\"]\nnakup.append(\"máslo\")\nprint(nakup)\nprint(\"První:\", nakup[0])\nprint(\"Počet:\", len(nakup))", "task": "Vytvoř seznam tří surovin, přidej čtvrtou pomocí append() a vypiš celý seznam i jeho délku."},
+{"title": "8. Slovníky", "short": "Dvojice klíč → hodnota", "why": "Slovník ukládá dvojice klíč → hodnota. Hodnotu najdeš podle klíče, ne podle pořadí.", "syntax": "osoba = {\"jmeno\": \"Pavel\", \"vek\": 30}\nprint(osoba[\"jmeno\"])\nosoba[\"mesto\"] = \"Brno\"", "example": "produkt = {\"nazev\": \"Káva\", \"cena\": 59}\nprodukt[\"ks\"] = 3\nprint(produkt[\"nazev\"])\nfor klic, hodnota in produkt.items():\n    print(klic, \"=\", hodnota)", "task": "Vytvoř slovník s údaji o jídle (název, gramáž, cena) a vypiš všechny jeho klíče a hodnoty."},
+{"title": "9. Řetězce (text)", "short": "Práce s textem", "why": "Řetězec je text. Python nabízí hotové metody pro změnu velikosti písmen, nahrazování, dělení a výběr části textu.", "syntax": "text = \"Python\"\nprint(text.upper())\nprint(text[0])\nprint(text[0:3])\nprint(len(text))", "example": "veta = \"Python je zábava\"\nprint(veta.upper())\nprint(veta.replace(\"zábava\", \"skvělý\"))\nprint(veta.split(\" \"))\nprint(veta[0:6])\nprint(len(veta))", "task": "Vezmi libovolnou větu a vypiš ji velkými písmeny, počet znaků a první slovo."},
+{"title": "10. f-stringy", "short": "Vkládání hodnot do textu", "why": "f-string vloží hodnoty proměnných přímo do textu. Před uvozovky dáš písmeno f a proměnné napíšeš do složených závorek.", "syntax": "jmeno = \"Pavel\"\nprint(f\"Ahoj, {jmeno}!\")\nprint(f\"{3.14159:.2f}\")", "example": "produkt = \"Káva\"\ncena = 59.9\nks = 3\nprint(f\"{produkt}: {ks} ks za {cena * ks:.2f} Kč\")", "task": "Spočítej cenu s 21% DPH a vypiš ji ve větě zaokrouhlenou na dvě desetinná místa."},
+{"title": "11. Počítání s čísly", "short": "Operátory + - * / // % **", "why": "Python umí běžné početní operace. Kromě dělení má i dělení beze zbytku (//) a zbytek po dělení (%), které se hodí třeba při rozdělování na porce.", "syntax": "a + b   a - b   a * b\na / b    # dělení\na // b   # celočíselné dělení\na % b    # zbytek\na ** b   # mocnina", "example": "a = 17\nb = 5\nprint(a + b, a - b, a * b)\nprint(a / b)\nprint(a // b)\nprint(a % b)\nprint(a ** 2)", "task": "Máš 47 porcí a do jedné krabice se vejde 6. Vypiš, kolik krabic bude plných a kolik porcí zbude."},
+{"title": "12. Logika: and, or, not", "short": "Spojování podmínek", "why": "Podmínky můžeš spojovat. and platí, když platí obě, or když aspoň jedna, not obrací pravdu a nepravdu.", "syntax": "a and b   # obě platí\na or b    # aspoň jedna platí\nnot a     # opak", "example": "vek = 25\nma_listek = True\nif vek >= 18 and ma_listek:\n    print(\"Můžeš vstoupit\")\nelse:\n    print(\"Nemůžeš vstoupit\")", "task": "Napiš podmínku, která vypíše „Sleva\", pokud je zákazník student nebo mu je víc než 65 let."},
+{"title": "13. Cyklus while", "short": "Opakuj, dokud něco platí", "why": "while opakuje blok, dokud je podmínka pravdivá. Pozor, aby se podmínka někdy přestala splňovat, jinak cyklus nikdy neskončí (editor ho po 4 sekundách zastaví).", "syntax": "while podminka:\n    ...", "example": "pocet = 3\nwhile pocet > 0:\n    print(\"Zbývá\", pocet)\n    pocet = pocet - 1\nprint(\"Start!\")", "task": "Pomocí while vypiš čísla od 10 do 1 a nakonec slovo Hotovo."},
+{"title": "14. Výchozí hodnota parametru", "short": "Funkce s volitelným argumentem", "why": "Parametr funkce může mít výchozí hodnotu. Když ji při volání nezadáš, použije se ta výchozí.", "syntax": "def funkce(a, b=10):\n    return a + b", "example": "def cena_s_dph(cena, sazba=21):\n    return round(cena * (1 + sazba / 100), 2)\n\nprint(cena_s_dph(100))\nprint(cena_s_dph(100, 12))", "task": "Napiš funkci pozdrav(jmeno, pozdrav=\"Ahoj\") a zavolej ji s jedním i se dvěma argumenty."},
+{"title": "15. Třídění a součty", "short": "sorted, sum, min, max", "why": "Python má hotové funkce pro práci s čísly v seznamu: seřadit, sečíst, najít největší a nejmenší hodnotu.", "syntax": "sorted(seznam)\nsum(seznam)\nmin(seznam)\nmax(seznam)\nseznam.sort(reverse=True)", "example": "ceny = [59, 12, 99, 35]\nprint(sorted(ceny))\nprint(sum(ceny))\nprint(max(ceny), min(ceny))\nceny.sort(reverse=True)\nprint(ceny)", "task": "Vytvoř seznam pěti čísel a vypiš jeho průměr (součet děleno počtem)."},
+{"title": "16. List comprehension", "short": "Nový seznam na jeden řádek", "why": "Zkrácený zápis, jak z jednoho seznamu vytvořit nový. Vejde se na jeden řádek a často nahradí celý for cyklus.", "syntax": "[vyraz for x in seznam]\n[vyraz for x in seznam if podminka]", "example": "cisla = [1, 2, 3, 4, 5, 6]\nctverce = [c * c for c in cisla]\nsude = [c for c in cisla if c % 2 == 0]\nprint(ctverce)\nprint(sude)", "task": "Ze seznamu čísel 1 až 10 vytvoř nový seznam jen s čísly většími než 5."},
+{"title": "17. Výjimky: try / except", "short": "Zachytávání chyb", "why": "Když program narazí na chybu, normálně spadne. Blok try/except chybu zachytí a umožní programu pokračovat.", "syntax": "try:\n    ...\nexcept ValueError:\n    ...", "example": "try:\n    cislo = int(\"abc\")\n    print(cislo)\nexcept ValueError:\n    print(\"To není číslo\")\nprint(\"Program pokračuje\")", "task": "Zkus převést text \"12x\" na číslo pomocí int() a ošetři chybu pomocí try/except."},
+{"title": "18. Moduly: math a random", "short": "Hotové sady funkcí", "why": "Modul je hotová sada funkcí. Načteš ho příkazem import a pak používáš jeho funkce přes tečku.", "syntax": "import math\nprint(math.sqrt(16))\n\nimport random\nprint(random.randint(1, 6))", "example": "import math\nimport random\n\nprint(math.sqrt(16))\nprint(math.pi)\nprint(random.randint(1, 6))\nprint(random.choice([\"červená\", \"modrá\", \"zelená\"]))", "task": "Vypiš náhodné číslo od 1 do 100 a odmocninu z čísla 144."},
+{"title": "19. Třídy a objekty", "short": "Vlastní datový typ", "why": "Třída je šablona pro objekty. Spojuje data (atributy) a chování (metody) na jednom místě.", "syntax": "class Nazev:\n    def __init__(self, a):\n        self.a = a\n\n    def metoda(self):\n        return self.a", "example": "class Produkt:\n    def __init__(self, nazev, cena):\n        self.nazev = nazev\n        self.cena = cena\n\n    def popis(self):\n        return f\"{self.nazev}: {self.cena} Kč\"\n\nkava = Produkt(\"Káva\", 59)\nprint(kava.popis())", "task": "Vytvoř třídu Surovina s názvem a množstvím a metodou, která vrátí text „název: množství\"."}
+];
+let lessons=[...starter], selected=-1, editing=false;
+let doneList=[];try{const d=JSON.parse(localStorage.getItem('pythonPlaygroundDone')||'[]');if(Array.isArray(d))doneList=d}catch(e){}
+function toggleDone(t){doneList=doneList.includes(t)?doneList.filter(x=>x!==t):[...doneList,t];try{localStorage.setItem('pythonPlaygroundDone',JSON.stringify(doneList))}catch(e){}}
+try{const saved=JSON.parse(localStorage.getItem('pythonPlaygroundLessons')||'[]');if(Array.isArray(saved)) lessons.push(...saved);}catch(e){}
+function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+function persist(){try{localStorage.setItem('pythonPlaygroundLessons',JSON.stringify(lessons.slice(starter.length)))}catch(e){notify('Lekci se nepodařilo uložit (úložiště prohlížeče není dostupné).')}}
+function renderList(){
+  $('lessonCount').textContent=lessons.length+' lekcí · hotovo '+lessons.filter(l=>doneList.includes(l.title)).length;
+  $('lessonList').innerHTML=lessons.map((l,i)=>`<div class="lesson ${i===selected?'selected':''}" data-i="${i}"><strong>${doneList.includes(l.title)?'✓ ':''}${esc(l.title)}</strong><small>${esc(l.short)}</small></div>`).join('');
+  $('lessonList').querySelectorAll('.lesson').forEach(el=>el.onclick=()=>selectLesson(+el.dataset.i,true));
+}
+function selectLesson(i,scroll){
+  selected=i;editing=false;$('lessonForm').hidden=true;$('lessonDisplay').hidden=false;
+  const l=lessons[i];$('lessonPanelTitle').textContent=l.title;
+  $('lessonDisplay').innerHTML=`<p>${esc(l.why)}</p><div class="section-title">Syntaxe</div><pre>${esc(l.syntax)}</pre><div class="section-title">Praktický příklad</div><pre>${esc(l.example)}</pre><div class="section-title">Úkol k procvičení</div><p>${esc(l.task)}</p><div class="lesson-actions"><button class="primary" id="putExample">Vložit příklad do editoru</button><button class="secondary" id="doneBtn">${doneList.includes(l.title)?'✓ Hotovo':'Označit jako hotovo'}</button>${i>=starter.length?'<button class="secondary" id="editLesson">Upravit lekci</button><button class="danger" id="deleteLesson">Smazat lekci</button>':''}</div>`;
+  $('putExample').onclick=()=>{
+    $('code').value=l.example;
+    if(isMobile()){$('code').scrollIntoView({behavior:'smooth',block:'center'})}else{$('code').focus()}
+  };
+  $('doneBtn').onclick=()=>{toggleDone(l.title);selectLesson(i)};
+  if(i>=starter.length){
+    $('editLesson').onclick=()=>openForm(i);
+    $('deleteLesson').onclick=async()=>{if(await dialog({title:'Smazat lekci?',text:'Opravdu smazat tuto vlastní lekci?',ok:'Smazat',danger:true})){lessons.splice(i,1);selected=-1;persist();renderList();$('lessonPanelTitle').textContent='Vyber lekci';$('lessonDisplay').textContent='Vlastní lekce byla smazána.';}}
+  }
+  renderList();
+  if(scroll&&isMobile())$('lessonPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function openForm(i=-1){
+  editing=true;selected=i;$('lessonDisplay').hidden=true;$('lessonForm').hidden=false;
+  $('lessonPanelTitle').textContent=i<0?'Přidat novou lekci':'Upravit vlastní lekci';
+  let l=i<0?{title:'',short:'',why:'',syntax:'',example:'',task:''}:lessons[i];
+  $('fTitle').value=l.title;$('fShort').value=l.short;$('fWhy').value=l.why;$('fSyntax').value=l.syntax;$('fExample').value=l.example;$('fTask').value=l.task;
+  renderList();
+  if(isMobile())$('lessonPanel').scrollIntoView({behavior:'smooth',block:'start'});else $('fTitle').focus();
+}
+function closeForm(){
+  editing=false;$('lessonForm').hidden=true;$('lessonDisplay').hidden=false;
+  if(selected>=0)selectLesson(selected);else{$('lessonPanelTitle').textContent='Vyber lekci';$('lessonDisplay').textContent='Klikni na lekci. Zde se zobrazí její obsah.'}
+}
+$('addLesson').onclick=()=>openForm();$('cancelLesson').onclick=closeForm;
+$('saveLesson').onclick=()=>{
+  let l={title:$('fTitle').value.trim(),short:$('fShort').value.trim(),why:$('fWhy').value.trim(),syntax:$('fSyntax').value,example:$('fExample').value,task:$('fTask').value.trim()};
+  if(!l.title){notify('Vyplň název lekce.');return}
+  if(!l.why&&!l.example&&!l.syntax){notify('Doplň alespoň vysvětlení, syntaxi nebo příklad.');return}
+  if(selected>=starter.length)lessons[selected]=l;else lessons.push(l);
+  persist();selected=lessons.length-1;renderList();selectLesson(selected);
+};
+$('reset').onclick=()=>{
+  $('code').value=original;$('output').textContent='Příklad obnoven. Spusť ho tlačítkem.';$('output').classList.add('empty');
+  $('vars').innerHTML='<div class="note">Spusť ukázkový kód.</div>';
+};
+
+/* ---------- Python (Pyodide ve Web Workeru) ---------- */
+let worker=null, ready=false, running=false, timer=null;
+// V appce (schéma app://) je Pyodide přibalený, na webu se bere z CDN
+const PY_BASE=location.protocol==='app:'?'app://localhost/pyodide/':'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
+function setEngine(text,cls){const e=$('engine');e.textContent=text;e.className='status '+(cls||'')}
+function setRunUi(){
+  const b=$('run');
+  b.disabled=!ready||running;
+  b.textContent=!ready?'Načítám Python…':running?'Spouštím…':'▶ Spustit kód';
+}
+function startWorker(){
+  if(worker){worker.terminate();worker=null}
+  ready=false;running=false;setRunUi();setEngine('Načítám Python…','busy');
+  const url=URL.createObjectURL(new Blob(['const BASE='+JSON.stringify(PY_BASE)+';\n'+$('workerSrc').textContent],{type:'text/javascript'}));
+  const w=new Worker(url);worker=w;
+  w.onmessage=e=>{
+    if(w!==worker)return;
+    const m=e.data;
+    if(m.type==='ready'){ready=true;setRunUi();setEngine('Python připraven')}
+    else if(m.type==='fail'){setEngine('Python se nenačetl','bad');$('output').classList.remove('empty');$('output').textContent='Nepodařilo se načíst Python (Pyodide). Při prvním spuštění je potřeba připojení k internetu.\n\n'+m.error;setRunUi()}
+    else if(m.type==='result'){clearTimeout(timer);running=false;showResult(m.data);setRunUi()}
+  };
+  w.onerror=e=>{if(w!==worker)return;setEngine('Chyba Pythonu','bad');$('output').classList.remove('empty');$('output').textContent='Chyba při načtení Pythonu: '+(e.message||'neznámá chyba')+'\nZkontroluj připojení k internetu.';setRunUi()};
+}
+function showResult(d){
+  $('output').textContent=d.output||(d.ok?'Program proběhl bez chyby, ale nic nevypsal.\n\nPokud chceš zobrazit hodnotu, použij například:\nprint(jmeno)\n\nVytvořené proměnné najdeš v panelu proměnných.':'Program skončil chybou.');
+  $('output').classList.remove('empty');
+  $('status').textContent=d.ok?'Dokončeno':'Chyba';
+  $('vars').innerHTML=d.variables.length?d.variables.map(v=>`<div class="var"><span>${esc(v.name)}</span><span class="type">${esc(v.type)}</span><span class="value">${esc(v.value)}</span></div>`).join(''):'<div class="note">Žádné uživatelské proměnné.</div>';
+}
+function run(){
+  if(!ready||running)return;
+  running=true;setRunUi();$('status').textContent='Probíhá běh';
+  worker.postMessage({code:$('code').value});
+  timer=setTimeout(()=>{
+    showResult({ok:false,output:'Program běžel déle než 4 sekundy a byl zastaven. Zkontroluj například nekonečný cyklus.',variables:[]});
+    startWorker(); // po zastavení se Python načte znovu (podruhé už z cache, rychle)
+  },LIMIT);
+}
+$('run').onclick=run;
+
+/* ---------- Vlastní dialog (alert/confirm/prompt ve WKWebView nefungují) ---------- */
+function dialog({title='',text='',input=null,area=null,ok='OK',cancel='Zrušit',danger=false,extras=[]}){
+  return new Promise(res=>{
+    const i=$('mInput'),a=$('mArea'),o=$('mOk'),c=$('mCancel'),x=$('mExtras');
+    $('mTitle').textContent=title;$('mText').textContent=text;$('mText').hidden=!text;
+    i.hidden=input===null;if(input!==null)i.value=input;
+    a.hidden=area===null;if(area!==null)a.value=area;
+    o.textContent=ok;o.className=danger?'danger':'primary';
+    c.hidden=cancel===null;if(cancel!==null)c.textContent=cancel;
+    x.innerHTML='';
+    extras.forEach(ex=>{const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=ex.label;b.onclick=()=>ex.action(b);x.appendChild(b)});
+    const finish=v=>{$('modal').hidden=true;o.onclick=c.onclick=null;res(v)};
+    o.onclick=()=>finish(area!==null?a.value:input!==null?i.value:true);
+    c.onclick=()=>finish(null);
+    $('modal').hidden=false;
+    setTimeout(()=>{(input!==null?i:area!==null?a:o).focus()},50);
+  });
+}
+const notify=text=>dialog({title:'Upozornění',text,cancel:null});
+$('mInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('mOk').click()}});
+
+/* ---------- Editor: vkládání kódu, Tab, automatické odsazení ---------- */
+const MARK='‸'; // značka, kam se po vložení nastaví kurzor
+const KEYS={
+ 'Symboly':[['⇥','    '],['()','(‸)'],['(','('],[')',')'],['[]','[‸]'],['[','['],[']',']'],['{}','{‸}'],['"…"','"‸"'],["'…'","'‸'"],[':',':'],[',',','],['.','.'],['=','='],['==','=='],['!=','!='],['<','<'],['>','>'],['<=','<='],['>=','>='],['+','+'],['-','-'],['*','*'],['/','/'],['//','//'],['%','%'],['**','**'],['#','#'],['_','_'],['\\','\\'],['!','!'],['&','&'],['|','|'],['@','@'],['~','~'],['^','^']],
+ 'Příkazy':[['if','if ‸:\n    '],['elif','elif ‸:\n    '],['else','else:\n    '],['for…range','for i in range(‸):\n    '],['for…in','for ‸ in :\n    '],['while','while ‸:\n    '],['def','def ‸():\n    '],['return','return ‸'],['class','class ‸:\n    def __init__(self):\n        '],['try/except','try:\n    ‸\nexcept Exception as e:\n    print(e)'],['import','import ‸'],['from…import','from ‸ import '],['break','break'],['continue','continue'],['pass','pass'],['in','in '],['not','not '],['and','and '],['or','or '],['is','is '],['True','True'],['False','False'],['None','None'],['lambda','lambda ‸: ']],
+ 'Funkce':[['print()','print(‸)'],['len()','len(‸)'],['range()','range(‸)'],['range(len())','range(len(‸))'],['str()','str(‸)'],['int()','int(‸)'],['float()','float(‸)'],['list()','list(‸)'],['dict()','dict(‸)'],['set()','set(‸)'],['sum()','sum(‸)'],['min()','min(‸)'],['max()','max(‸)'],['sorted()','sorted(‸)'],['round()','round(‸, 2)'],['abs()','abs(‸)'],['type()','type(‸)'],['enumerate()','enumerate(‸)'],['zip()','zip(‸)'],['f"…"','f"‸"'],['.append()','.append(‸)'],['.items()','.items()'],['.keys()','.keys()'],['.values()','.values()'],['.split()','.split(‸)'],['.join()','.join(‸)'],['.upper()','.upper()'],['.lower()','.lower()'],['.replace()','.replace(‸, )']]
+};
+let keyTab='Symboly';
+function put(t,cursor){
+  const c=$('code');c.focus();
+  const start=c.selectionStart;
+  if(!document.execCommand('insertText',false,t))c.setRangeText(t,c.selectionStart,c.selectionEnd,'end');
+  if(cursor!=null)c.setSelectionRange(start+cursor,start+cursor);
+}
+function lineIndent(){
+  const c=$('code'),s=c.selectionStart;
+  const ls=s===0?0:c.value.lastIndexOf('\n',s-1)+1;
+  const before=c.value.slice(ls,s);
+  return {indent:before.match(/^[ \t]*/)[0],before};
+}
+function insertCode(raw){
+  const {indent}=lineIndent();
+  let t=raw.split('\n').join('\n'+indent);
+  const m=t.indexOf(MARK);
+  t=t.replace(MARK,'');
+  put(t,m>=0?m:null);
+}
+function renderKeys(){
+  $('keyTabs').innerHTML=Object.keys(KEYS).map(k=>`<button type="button" class="tab ${k===keyTab?'on':''}" data-t="${k}">${k}</button>`).join('');
+  $('keys').innerHTML='';
+  KEYS[keyTab].forEach(([label,txt])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>insertCode(txt);$('keys').appendChild(b)});
+}
+$('keyTabs').onclick=e=>{const b=e.target.closest('button');if(b){keyTab=b.dataset.t;renderKeys()}};
+['keys','keyTabs'].forEach(id=>$(id).addEventListener('pointerdown',e=>e.preventDefault())); // klávesnice zůstane otevřená
+$('code').addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();run();return}
+  if(e.key==='Tab'&&!e.shiftKey){e.preventDefault();put('    ');return}
+  if(e.key==='Enter'&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey){
+    e.preventDefault();
+    const {indent,before}=lineIndent();
+    put('\n'+indent+(/:\s*$/.test(before)?'    ':''));
+  }
+});
+
+/* ---------- Moje programy ---------- */
+let programs=[];
+try{const p=JSON.parse(localStorage.getItem('pythonPlaygroundPrograms')||'[]');if(Array.isArray(p))programs=p}catch(e){}
+const today=()=>new Date().toLocaleDateString('cs-CZ');
+function persistPrograms(){try{localStorage.setItem('pythonPlaygroundPrograms',JSON.stringify(programs))}catch(e){notify('Program se nepodařilo uložit (úložiště prohlížeče není dostupné).')}}
+function renderPrograms(){
+  $('progCount').textContent=programs.length+' uložených';
+  $('progList').innerHTML=programs.length?programs.map((p,i)=>`<div class="prog"><div><strong>${esc(p.name)}</strong><small>${esc(p.date||'')} · ${p.code.split('\n').length} řádků</small></div><div class="prog-actions"><button class="secondary" data-a="load" data-i="${i}">Načíst</button><button class="secondary" data-a="over" data-i="${i}">Přepsat</button><button class="danger" data-a="del" data-i="${i}">Smazat</button></div></div>`).join(''):'<div class="note">Zatím nic. Napiš kód a klikni na „💾 Uložit program".</div>';
+}
+$('progList').onclick=async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const i=+b.dataset.i,p=programs[i];if(!p)return;
+  if(b.dataset.a==='load'){
+    $('code').value=p.code;$('status').textContent='Načteno: '+p.name;
+    if(isMobile())$('code').scrollIntoView({behavior:'smooth',block:'center'});else window.scrollTo({top:0,behavior:'smooth'});
+  }else if(b.dataset.a==='over'){
+    if(await dialog({title:'Přepsat program?',text:'Uložený program „'+p.name+'" bude nahrazen kódem z editoru.',ok:'Přepsat'})){p.code=$('code').value;p.date=today();persistPrograms();renderPrograms()}
+  }else if(b.dataset.a==='del'){
+    if(await dialog({title:'Smazat program?',text:'Opravdu smazat „'+p.name+'"?',ok:'Smazat',danger:true})){programs.splice(i,1);persistPrograms();renderPrograms()}
+  }
+};
+$('saveProg').onclick=async()=>{
+  const code=$('code').value;
+  if(!code.trim()){notify('Editor je prázdný, není co uložit.');return}
+  const name=await dialog({title:'Uložit program',text:'Zadej název programu:',input:'',ok:'Uložit'});
+  if(name===null)return;
+  const n=name.trim()||'Program '+(programs.length+1);
+  const ex=programs.findIndex(p=>p.name===n);
+  if(ex>=0){
+    if(!await dialog({title:'Název už existuje',text:'Přepsat program „'+n+'"?',ok:'Přepsat'}))return;
+    programs[ex]={name:n,code,date:today()};
+  }else programs.push({name:n,code,date:today()});
+  persistPrograms();renderPrograms();$('status').textContent='Program uložen';
+};
+
+/* ---------- Záloha: export a import ---------- */
+function copyArea(btn){
+  const a=$('mArea');a.focus();a.select();a.setSelectionRange(0,a.value.length);
+  let ok=false;try{ok=document.execCommand('copy')}catch(e){}
+  if(!ok&&navigator.clipboard)navigator.clipboard.writeText(a.value).catch(()=>{});
+  btn.textContent='Zkopírováno';
+}
+function downloadJson(text){
+  const u=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+  const a=document.createElement('a');a.href=u;a.download='python-playground-zaloha.json';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),2000);
+}
+$('exportBtn').onclick=()=>{
+  const data=JSON.stringify({app:'python-playground',version:1,programs,lessons:lessons.slice(starter.length)},null,2);
+  const extras=[{label:'Kopírovat',action:copyArea}];
+  if(location.protocol!=='app:')extras.push({label:'Stáhnout soubor',action:()=>downloadJson(data)});
+  dialog({title:'Záloha (export)',text:'Zkopíruj celý text a ulož ho třeba do Poznámek. Do druhého zařízení ho vložíš přes Import.',area:data,ok:'Hotovo',cancel:null,extras});
+};
+function pickFile(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json,.txt,application/json,text/plain';
+  inp.onchange=()=>{const f=inp.files[0];if(f)f.text().then(t=>{$('mArea').value=t})};
+  inp.click();
+}
+$('importBtn').onclick=async()=>{
+  const txt=await dialog({title:'Import zálohy',text:'Vlož text zálohy z exportu (nebo vyber soubor). Stávající data se nesmažou, přidají se jen nové položky.',area:'',ok:'Importovat',extras:[{label:'Vybrat soubor…',action:pickFile}]});
+  if(!txt||!txt.trim())return;
+  try{
+    const d=JSON.parse(txt);let np=0,nl=0;
+    (d.programs||[]).forEach(p=>{if(p&&typeof p.name==='string'&&typeof p.code==='string'&&!programs.some(q=>q.name===p.name&&q.code===p.code)){programs.push({name:p.name,code:p.code,date:String(p.date||'')});np++}});
+    (d.lessons||[]).forEach(l=>{if(l&&typeof l.title==='string'&&!lessons.some(q=>q.title===l.title&&q.example===l.example)){lessons.push({title:l.title,short:String(l.short||''),why:String(l.why||''),syntax:String(l.syntax||''),example:String(l.example||''),task:String(l.task||'')});nl++}});
+    persistPrograms();persist();renderPrograms();renderList();
+    notify('Přidáno programů: '+np+', lekcí: '+nl+'.');
+  }catch(e){notify('Text se nepodařilo přečíst. Zkontroluj, že je zkopírovaný celý.')}
+};
+
+renderList();
+renderPrograms();
+renderKeys();
+startWorker();
+</script>
+</body>
+</html>
